@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #0f1117;
+  color: #e2e8f0;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root {
+  --color-surface: #0f1117;
+  --color-surface-2: #1a1d27;
+  --color-surface-3: #22263a;
+  --color-border: #2e3248;
+  --color-accent: #6c63ff;
+  --color-accent-hover: #7c74ff;
+  --color-success: #22d3a5;
+  --color-error: #f87171;
+  --color-warning: #fbbf24;
+  --color-text: #e2e8f0;
+  --color-muted: #8892a4;
+}
+
+textarea, pre {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 13px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: #2e3248; border-radius: 3px; }
+
+/* Drag and drop highlight */
+.drop-active {
+  border-color: #6c63ff !important;
+  background-color: rgba(108, 99, 255, 0.06) !important;
+}
+

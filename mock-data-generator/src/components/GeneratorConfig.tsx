@@ -196,6 +196,13 @@ export function GeneratorConfig({ config, onChange, onGenerate, isGenerating, di
         onChange={(v) => update({ failOnInvalidTypes: v })}
       />
 
+      <Toggle
+        label="Auto-Enrich Schema"
+        help="Infer realistic faker annotations from property names (email, date, name, etc.)"
+        checked={config.autoEnrich}
+        onChange={(v) => update({ autoEnrich: v })}
+      />
+
       <div className="w-full h-px" style={{ background: 'var(--color-border)' }} />
 
       {/* Generate button */}

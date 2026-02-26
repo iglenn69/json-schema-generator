@@ -1,33 +1,41 @@
 import React, { useRef, useCallback } from 'react';
 import { Upload, FileJson, X } from 'lucide-react';
 
+// Example schema uses plain property names — the Auto-Enrich feature infers
+// realistic faker generators automatically from those names.
 const EXAMPLE_SCHEMA = JSON.stringify(
   {
     $schema: 'http://json-schema.org/draft-07/schema#',
     title: 'User',
     type: 'object',
-    required: ['id', 'name', 'email', 'age'],
+    required: ['id', 'firstName', 'lastName', 'email', 'phone', 'age', 'createdAt'],
     properties: {
-      id: { type: 'integer', minimum: 1 },
-      name: {
-        type: 'string',
-        faker: 'person.fullName',
-        minLength: 2,
-        maxLength: 60,
-      },
-      email: { type: 'string', format: 'email', faker: 'internet.email' },
-      age: { type: 'integer', minimum: 18, maximum: 80 },
+      id:        { type: 'integer' },
+      firstName: { type: 'string' },
+      lastName:  { type: 'string' },
+      email:     { type: 'string' },
+      phone:     { type: 'string' },
+      age:       { type: 'integer' },
+      jobTitle:  { type: 'string' },
+      username:  { type: 'string' },
+      website:   { type: 'string' },
+      createdAt: { type: 'string' },
+      updatedAt: { type: 'string' },
       address: {
         type: 'object',
         properties: {
-          street: { type: 'string', faker: 'location.streetAddress' },
-          city: { type: 'string', faker: 'location.city' },
-          country: { type: 'string', faker: 'location.country' },
+          street:  { type: 'string' },
+          city:    { type: 'string' },
+          state:   { type: 'string' },
+          country: { type: 'string' },
+          zipCode: { type: 'string' },
         },
       },
+      company: { type: 'string' },
+      bio:     { type: 'string' },
       tags: {
         type: 'array',
-        items: { type: 'string', faker: 'word.noun' },
+        items: { type: 'string' },
         minItems: 1,
         maxItems: 4,
       },

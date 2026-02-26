@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react';
 import { generate as jsf } from 'json-schema-faker';
+import { faker } from '@faker-js/faker';
 import Ajv from 'ajv';
 import type { GeneratorConfig, GenerationResult, SavedPreset, OutputFormat, ValidationResult } from '../types/schema';
 import type { JsonSchema } from 'json-schema-faker';
+import { enrichSchema } from '../utils/schemaEnricher';
 
 const ajv = new Ajv({ allErrors: true });
 
@@ -13,6 +15,7 @@ const DEFAULT_CONFIG: GeneratorConfig = {
   optionalsProbability: 0.5,
   alwaysAddFakeOf: true,
   failOnInvalidTypes: false,
+  autoEnrich: true,
 };
 
 const STORAGE_KEY = 'mock-gen-presets';
@@ -46,14 +49,20 @@ export function useSchemaGenerator() {
     try {
       let schema: JsonSchema;
       try {
-        schema = JSON.parse(schemaText) as JsonSchema;
+        const parsed = JSON.parse(schemaText);
+        schema = (config.autoEnrich ? enrichSchema(parsed) : parsed) as JsonSchema;
       } catch {
         throw new Error('Invalid JSON schema: could not parse JSON.');
+      }
+
+      if (config.useSeed && config.seed !== undefined) {
+        faker.seed(config.seed);
       }
 
       const jsfOptions = {
         optionalsProbability: config.optionalsProbability,
         useDefaultValue: true,
+        extensions: { faker },
         ...(config.useSeed && config.seed !== undefined ? { seed: config.seed } : {}),
       };
 

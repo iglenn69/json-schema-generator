@@ -11,7 +11,8 @@ A modern, minimal web app for generating realistic mock data from any JSON Schem
 - **AJV Validation** — every generated object is validated against the original schema; per-field errors are shown with instance paths and keywords
 - **Multiple Export Formats** — download as a JSON Array, Pretty JSON (one object per block), or NDJSON; copy to clipboard with one click
 - **Saved Presets** — bookmark any schema + config combination to `localStorage` and reload it instantly
-- **Faker annotations** — use `"faker": "person.fullName"` and standard `"format"` keywords for realistic, domain-specific values
+- **Auto-Enrich** — infers realistic `@faker-js/faker` generators automatically from property names (e.g. `email`, `createdAt`, `city`) with no manual annotations required
+- **Faker annotations** — optionally use explicit `"faker": "person.fullName"` or standard `"format"` keywords to override auto-enrichment
 
 ---
 
@@ -23,6 +24,7 @@ A modern, minimal web app for generating realistic mock data from any JSON Schem
 | Build tool | Vite 8 |
 | Styling | Tailwind CSS v4 (`@tailwindcss/vite`) |
 | Mock generation | `json-schema-faker` v0.6 |
+| Realistic data | `@faker-js/faker` v9 |
 | Validation | `ajv` v8 |
 | Icons | `lucide-react` |
 
@@ -68,6 +70,8 @@ src/
 │   └── useSchemaGenerator.ts # Core generation & state logic
 ├── types/
 │   └── schema.ts             # Shared TypeScript interfaces
+├── utils/
+│   └── schemaEnricher.ts     # Infers faker annotations from property names
 ├── App.tsx                   # Root layout and tab routing
 └── index.css                 # Global styles + CSS custom properties
 ```
@@ -76,94 +80,73 @@ src/
 
 ## Example Schema
 
-Click **Load Example** in the app or paste this to get started:
+Click **Load Example** in the app or paste this to get started.
+No manual `faker` annotations are needed — **Auto-Enrich** infers them from the property names:
 
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "User",
   "type": "object",
-  "required": ["id", "name", "email", "age"],
+  "required": ["id", "firstName", "lastName", "email", "phone", "age", "createdAt"],
   "properties": {
-    "id":    { "type": "integer", "minimum": 1 },
-    "name":  { "type": "string", "faker": "person.fullName" },
-    "email": { "type": "string", "format": "email" },
-    "age":   { "type": "integer", "minimum": 18, "maximum": 80 },
-    "tags":  { "type": "array", "items": { "type": "string", "faker": "word.noun" }, "minItems": 1, "maxItems": 4 }
+    "id":        { "type": "integer" },
+    "firstName": { "type": "string" },
+    "lastName":  { "type": "string" },
+    "email":     { "type": "string" },
+    "phone":     { "type": "string" },
+    "age":       { "type": "integer" },
+    "jobTitle":  { "type": "string" },
+    "username":  { "type": "string" },
+    "website":   { "type": "string" },
+    "createdAt": { "type": "string" },
+    "updatedAt": { "type": "string" },
+    "address": {
+      "type": "object",
+      "properties": {
+        "street":  { "type": "string" },
+        "city":    { "type": "string" },
+        "state":   { "type": "string" },
+        "country": { "type": "string" },
+        "zipCode": { "type": "string" }
+      }
+    },
+    "company": { "type": "string" },
+    "bio":     { "type": "string" },
+    "tags":    { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 4 }
   }
 }
 ```
 
 ---
 
+## Auto-Enrich — Inference Rules
+
+When **Auto-Enrich Schema** is enabled (default: on), property names are matched against 60+ patterns to inject realistic faker generators. Examples:
+
+| Property name pattern | Generated value |
+|---|---|
+| `email` | Real email address |
+| `firstName`, `lastName`, `fullName` | Person name |
+| `phone`, `mobile` | Formatted phone number |
+| `createdAt`, `updatedAt`, `timestamp` | ISO 8601 date-time |
+| `birthDate`, `dob`, `startDate` | ISO 8601 date |
+| `time`, `startTime` | ISO 8601 time |
+| `city`, `country`, `zipCode`, `street` | Location data |
+| `company`, `jobTitle` | Company / job strings |
+| `username`, `website`, `url` | Internet values |
+| `bio`, `description`, `content` | Lorem paragraph |
+| `uuid` | UUID format |
+| `age`, `price`, `rating`, `percentage` | Clamped numeric range |
+
+Explicit `"faker"` or `"format"` annotations in the schema always take precedence over inferred values.
+
+---
+
 ## Tips
 
-- Use `"faker": "<category>.<method>"` for realistic values (e.g. `"location.city"`, `"internet.url"`)
+- **Auto-Enrich** is the easiest path to realistic data — just name your properties sensibly
+- Use explicit `"faker": "<category>.<method>"` to override a specific field (e.g. `"faker": "location.city"`)
 - Enable **Use Seed** to produce the same dataset every run — useful for snapshot tests
 - Set **Optional Fields Probability** to `1.0` to always include every optional property
 - Presets are stored in `localStorage` under the key `mock-gen-presets`
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```

@@ -5,6 +5,7 @@ export interface GeneratorConfig {
   optionalsProbability: number;
   alwaysAddFakeOf: boolean;
   failOnInvalidTypes: boolean;
+  autoEnrich: boolean;
 }
 
 export interface ValidationResult {

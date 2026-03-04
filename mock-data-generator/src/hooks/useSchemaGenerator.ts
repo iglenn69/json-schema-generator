@@ -179,6 +179,21 @@ export function useSchemaGenerator() {
     navigator.clipboard.writeText(JSON.stringify(result.data, null, 2));
   }, [result]);
 
+  const saveToLocalStorage = useCallback(
+    (key: string): { success: boolean; error?: string } => {
+      if (!result) return { success: false, error: 'No data to save.' };
+      const trimmedKey = key.trim();
+      if (!trimmedKey) return { success: false, error: 'Key cannot be empty.' };
+      try {
+        localStorage.setItem(trimmedKey, JSON.stringify(result.data, null, 2));
+        return { success: true };
+      } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : 'Failed to save.' };
+      }
+    },
+    [result]
+  );
+
   return {
     schemaText,
     setSchemaText,
@@ -196,6 +211,7 @@ export function useSchemaGenerator() {
     setOutputFormat,
     downloadResult,
     copyToClipboard,
+    saveToLocalStorage,
   };
 }
 

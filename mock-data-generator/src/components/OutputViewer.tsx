@@ -1,17 +1,32 @@
 import { useState } from 'react';
-import { Copy, Download, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Copy, Download, CheckCircle, ChevronDown, ChevronRight, Save } from 'lucide-react';
 import type { GenerationResult, OutputFormat } from '../types/schema';
 
 interface Props {
   result: GenerationResult;
   onDownload: (fmt: OutputFormat) => void;
   onCopy: () => void;
+  onSaveToLocalStorage: (key: string) => { success: boolean; error?: string };
 }
 
-export function OutputViewer({ result, onDownload, onCopy }: Props) {
+export function OutputViewer({ result, onDownload, onCopy, onSaveToLocalStorage }: Props) {
   const [copied, setCopied] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [fmt, setFmt] = useState<OutputFormat>('json-array');
+  const [lsKey, setLsKey] = useState('');
+  const [lsSaved, setLsSaved] = useState(false);
+  const [lsError, setLsError] = useState<string | null>(null);
+
+  const handleSaveToLocalStorage = () => {
+    setLsError(null);
+    const { success, error } = onSaveToLocalStorage(lsKey);
+    if (success) {
+      setLsSaved(true);
+      setTimeout(() => setLsSaved(false), 2000);
+    } else {
+      setLsError(error ?? 'Unknown error');
+    }
+  };
 
   const handleCopy = () => {
     onCopy();
@@ -90,6 +105,42 @@ export function OutputViewer({ result, onDownload, onCopy }: Props) {
           Download
         </button>
       </div>
+
+      {/* Save to localStorage */}
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] shrink-0" style={{ color: 'var(--color-muted)' }}>Save to localStorage:</span>
+        <input
+          type="text"
+          value={lsKey}
+          onChange={(e) => { setLsKey(e.target.value); setLsError(null); }}
+          placeholder="Enter storage key…"
+          className="flex-1 px-2.5 py-1 rounded-lg text-xs"
+          style={{
+            background: 'var(--color-surface-3)',
+            border: `1px solid ${lsError ? 'var(--color-error)' : 'var(--color-border)'}`,
+            color: 'var(--color-text)',
+            outline: 'none',
+            minWidth: 0,
+          }}
+          onKeyDown={(e) => e.key === 'Enter' && handleSaveToLocalStorage()}
+        />
+        <button
+          onClick={handleSaveToLocalStorage}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all shrink-0"
+          style={{
+            background: lsSaved ? 'var(--color-success)' : 'var(--color-surface-3)',
+            border: '1px solid var(--color-border)',
+            color: lsSaved ? '#fff' : 'var(--color-muted)',
+            cursor: 'pointer',
+          }}
+        >
+          {lsSaved ? <CheckCircle size={12} /> : <Save size={12} />}
+          {lsSaved ? 'Saved!' : 'Save'}
+        </button>
+      </div>
+      {lsError && (
+        <p className="text-[11px]" style={{ color: 'var(--color-error)', margin: 0 }}>{lsError}</p>
+      )}
 
       {/* Records explorer */}
       <div

@@ -22,7 +22,7 @@ function App() {
     result, error,
     isGenerating, generate,
     presets, savePreset, loadPreset, deletePreset,
-    downloadResult, copyToClipboard,
+    downloadResult, copyToClipboard, saveToLocalStorage,
   } = useSchemaGenerator()
 
   const handleLoadPreset = (preset: Parameters<typeof loadPreset>[0]) => {
@@ -118,6 +118,7 @@ function App() {
                     result={result}
                     onDownload={downloadResult}
                     onCopy={copyToClipboard}
+                    onSaveToLocalStorage={saveToLocalStorage}
                   />
                 )}
                 {activeTab === 'validation' && <ValidationPanel result={result} />}

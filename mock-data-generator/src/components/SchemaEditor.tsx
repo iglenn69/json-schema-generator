@@ -65,6 +65,8 @@ export function SchemaEditor({ value, onChange, error }: Props) {
       reader.onload = (e) => {
         const text = e.target?.result as string;
         onChange(text);
+        // Reset so the same file can be re-selected after a Clear
+        if (fileInputRef.current) fileInputRef.current.value = '';
       };
       reader.readAsText(file);
     },
